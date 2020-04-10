@@ -1,8 +1,7 @@
 package com.example.aphk.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.aphk.exeptions.NotFoundException;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +12,8 @@ import java.util.Map;
 @RequestMapping("message")
 public class MessageController {
 
-    public List<Map<String, String>> messages = new ArrayList<Map<String,String>>(){{
+    private int counter = 4;
+    private List<Map<String, String>> messages = new ArrayList<Map<String,String>>(){{
         add(new HashMap<String, String>(){{put("id", "1"); put("text" , "message_1");}});
         add(new HashMap<String, String>(){{put("id", "2"); put("text" , "message_2");}});
         add(new HashMap<String, String>(){{put("id", "3"); put("text" , "message_3");}});
@@ -24,6 +24,37 @@ public class MessageController {
         return messages;
     }
 
-    @GetMapping("id")
-    public Map<String, String> ()
+    @GetMapping("{id}")
+    public Map<String, String> getOneMessage (@PathVariable String id){
+        return getMessage(id);
+    }
+
+    @PostMapping
+    public Map<String, String> create(@RequestBody Map<String, String> message){
+        message.put("id", String.valueOf(counter++));
+        messages.add(message);
+        return message;
+    }
+
+    @PutMapping("{id}")
+    public Map<String, String> update(@PathVariable String id, @RequestBody Map<String, String> message){
+        Map<String, String> messageFromDB = getMessage(id);
+        messageFromDB.putAll(message);
+        messageFromDB.put("id", id);
+        return messageFromDB;
+    }
+
+    @DeleteMapping("{id}")
+    public void delete(@PathVariable String id){
+        Map<String, String> messageFromDB = getMessage(id);
+        messages.remove(messageFromDB);
+    }
+
+
+    private Map<String, String> getMessage(@PathVariable String id) {
+        return messages.stream()
+                .filter(message -> message.get("id").equals(id))
+                .findFirst()
+                .orElseThrow(NotFoundException::new);
+    }
 }
