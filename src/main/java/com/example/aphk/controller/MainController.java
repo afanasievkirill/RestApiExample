@@ -3,6 +3,7 @@ package com.example.aphk.controller;
 import com.example.aphk.model.User;
 import com.example.aphk.repo.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,9 @@ public class MainController {
 
     private final MessageRepo messageRepo;
 
+    @Value("${spring.profiles.active}")
+    private String profile;
+
     @Autowired
     public MainController(MessageRepo messageRepo) {
         this.messageRepo = messageRepo;
@@ -28,6 +32,7 @@ public class MainController {
         data.put("profile", user);
         data.put("messages", messageRepo.findAll());
         model.addAttribute("frontendData", data);
+        model.addAttribute("isDevMode", "dev".equals(profile) );
         return "index";
     }
 }

@@ -6,6 +6,8 @@ import com.example.aphk.repo.MessageRepo;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -59,6 +61,12 @@ public class MessageController {
     @DeleteMapping("{id}")
     public void delete(@PathVariable("id") Message message){
         messageRepo.delete(message);
+    }
+
+    @MessageMapping("/changeMessage")
+    @SendTo("/message/activity")
+    public Message change(Message message){
+        return messageRepo.save(message);
     }
 
     /* Получение объекта из листа
