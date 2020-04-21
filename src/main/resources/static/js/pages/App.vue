@@ -1,19 +1,29 @@
 <template>
-    <div>
-        <div v-if="!profile">Необходимо авторизоваться через
-            <a href="/login">Google</a>
-        </div>
-        <div v-else>
-            <div>{{profile.name}}&nbsp;<a href="/logout">Выйти</a></div>
-            <messages-list :messages="messages" />
-        </div>
-    </div>
+    <v-app>
+        <v-toolbar app>
+            <v-toolbar-title>Chat</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <span v-if="profile">{{profile.name}}&nbsp;</span>
+            <v-btn v-if="profile" icon href="/logout">
+                <v-icon>{{ logout }}</v-icon>
+            </v-btn>
+        </v-toolbar>
+        <v-content>
+            <v-container v-if="!profile">Необходимо авторизоваться через
+                <a href="/login">Google</a>
+            </v-container>
+            <v-container v-if="profile">
+                <messages-list :messages="messages" />
+            </v-container>
+        </v-content>
+    </v-app>
 </template>
-
 <script>
     import MessagesList from 'components/messages/MessageList.vue'
     import { addHandler } from 'util/ws'
     import { getIndex } from 'util/collections'
+    import { mdiExitToApp } from '@mdi/js'
+    import { mdiDeleteForever } from '@mdi/js'
     export default {
         components: {
             MessagesList
@@ -21,7 +31,9 @@
         data() {
             return {
                 messages: frontendData.messages,
-                profile: frontendData.profile
+                profile: frontendData.profile,
+                logout: mdiExitToApp,
+                delete: mdiDeleteForever
             }
         },
         created() {
@@ -38,4 +50,5 @@
 </script>
 
 <style>
+
 </style>
