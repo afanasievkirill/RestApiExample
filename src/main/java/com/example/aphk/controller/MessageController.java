@@ -1,37 +1,32 @@
 package com.example.aphk.controller;
 
+import com.example.aphk.dto.EventType;
+import com.example.aphk.dto.ObjectType;
 import com.example.aphk.model.Message;
 import com.example.aphk.model.Views;
 import com.example.aphk.repo.MessageRepo;
+import com.example.aphk.util.WsSender;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 @RestController
 @RequestMapping("message")
 public class MessageController {
 
     private final MessageRepo messageRepo;
+    private final BiConsumer<EventType, Message> wsSender;
 
     @Autowired
-    public MessageController(MessageRepo messageRepo) {
+    public MessageController(MessageRepo messageRepo, WsSender wsSender) {
         this.messageRepo = messageRepo;
+        this.wsSender = wsSender.getSender(ObjectType.MESSAGE, Views.IdName.class);
     }
-
-    /* Простая реализация Json
-    private int counter = 4;
-    private List<Map<String, String>> messages = new ArrayList<Map<String,String>>(){{
-        add(new HashMap<String, String>(){{put("id", "1"); put("text" , "message_1");}});
-        add(new HashMap<String, String>(){{put("id", "2"); put("text" , "message_2");}});
-        add(new HashMap<String, String>(){{put("id", "3"); put("text" , "message_3");}});
-    }};
-     */
 
     @GetMapping
     @JsonView(Views.IdName.class)
@@ -47,7 +42,9 @@ public class MessageController {
     @PostMapping
     public Message create(@RequestBody Message message){
         message.setCreationDate(LocalDateTime.now());
-        return messageRepo.save(message);
+        Message updatedMessage = messageRepo.save(message);
+        wsSender.accept(EventType.CREATE, updatedMessage);
+        return updatedMessage;
     }
 
     @PutMapping("{id}")
@@ -55,26 +52,15 @@ public class MessageController {
                                       @RequestBody Message message
     ){
         BeanUtils.copyProperties(message, messageFromDb, "id");
-        return messageRepo.save(messageFromDb);
+        Message updatedMessage = messageRepo.save(messageFromDb);
+        wsSender.accept(EventType.UPDATE, updatedMessage);
+        return updatedMessage;
     }
 
     @DeleteMapping("{id}")
     public void delete(@PathVariable("id") Message message){
         messageRepo.delete(message);
+        wsSender.accept(EventType.REMOVE, message);
     }
 
-    @MessageMapping("/changeMessage")
-    @SendTo("/topic/activity")
-    public Message change(Message message){
-        return messageRepo.save(message);
-    }
-
-    /* Получение объекта из листа
-    private Map<String, String> getMessage(@PathVariable String id) {
-        return messages.stream()
-                .filter(message -> message.get("id").equals(id))
-                .findFirst()
-                .orElseThrow(NotFoundException::new);
-    }
-     */
 }
