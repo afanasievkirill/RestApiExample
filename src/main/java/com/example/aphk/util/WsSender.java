@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+
 import java.util.function.BiConsumer;
 
 @Component
@@ -33,12 +34,11 @@ public class WsSender {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-
             template.convertAndSend(
                     "/topic/activity",
                     new WsEventDto(objectType, eventType, value)
             );
-
         };
     }
 }
+

@@ -37,14 +37,14 @@
         },
         created() {
             addHandler(data => {
-                if(data.objectType === 'MESSAGE') {
-                    const index = this.message.findIndex(item => item.id === data.body.id)
+                if (data.objectType === 'MESSAGE') {
+                    const index = this.messages.findIndex(item => item.id === data.body.id)
                     switch (data.eventType) {
                         case 'CREATE':
                         case 'UPDATE':
-                            if(index>-1){
+                            if (index > -1) {
                                 this.messages.splice(index, 1, data.body)
-                            }else{
+                            } else {
                                 this.messages.push(data.body)
                             }
                             break
@@ -52,10 +52,10 @@
                             this.messages.splice(index, 1)
                             break
                         default:
-                            console.error('event type is unknown ${data.eventType}')
+                            console.error(`Looks like the event type if unknown "${data.eventType}"`)
                     }
-                }else{
-                    console.error('object type is unknown ${data.objectType}')
+                } else {
+                    console.error(`Looks like the object type if unknown "${data.objectType}"`)
                 }
             })
         }

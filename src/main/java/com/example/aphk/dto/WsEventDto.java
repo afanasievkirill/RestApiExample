@@ -6,20 +6,20 @@ import com.example.aphk.dto.ObjectType;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-
-
 
 @JsonView(Views.Id.class)
-@AllArgsConstructor
 public class WsEventDto {
+
+
     private ObjectType objectType;
     private EventType eventType;
     @JsonRawValue
     private String body;
 
-    public WsEventDto(ObjectType objectType, EventType eventType, String value) {
-
+    public WsEventDto(ObjectType objectType, EventType eventType, String body) {
+        this.objectType = objectType;
+        this.eventType = eventType;
+        this.body = body;
     }
 
     public ObjectType getObjectType() {
