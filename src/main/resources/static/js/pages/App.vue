@@ -1,26 +1,32 @@
 <template>
     <v-app>
-        <v-toolbar>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-            <v-toolbar-title>Image board</v-toolbar-title>
+        <v-app-bar app>
+            <v-toolbar-title class="px-8">Image board</v-toolbar-title>
+            <v-btn text
+
+                   v-if="profile"
+                   :disabled="$route.path === '/'"
+                   @click="showMessages">
+                Messages
+            </v-btn>
             <v-spacer></v-spacer>
-            <span v-if="profile">{{profile.name}}&nbsp;</span>
-            <v-btn v-if="profile" icon href="/logout">
+            <v-btn text
+                   v-if="profile"
+                   :disabled="$route.path === '/profile'"
+                   @click="showProfile">
+                {{profile.name}}
+            </v-btn>
+            <v-btn class="px-8" v-if="profile" icon href="/logout">
                 <v-icon>{{ logout }}</v-icon>
             </v-btn>
-        </v-toolbar>
+        </v-app-bar>
         <v-content>
-            <v-container v-if="!profile">Необходимо авторизоваться через
-                <a href="/login">Google</a>
-            </v-container>
-            <v-container v-if="profile">
-                <messages-list />
-            </v-container>
+            <router-view></router-view>
         </v-content>
     </v-app>
 </template>
 <script>
-    import MessagesList from 'components/messages/MessageList.vue'
+    import MessagesList from 'pages/MessageList.vue'
     import { addHandler } from 'util/ws'
     import { mapState, mapMutations } from 'vuex'
     import { mdiExitToApp } from '@mdi/js'
@@ -36,7 +42,15 @@
             }
         },
         computed: mapState(['profile']),
-        methods: mapMutations(['addMessageMutation', 'updateMessageMutation', 'removeMessageMutation']),
+        methods: {
+            ...mapMutations(['addMessageMutation', 'updateMessageMutation', 'removeMessageMutation']),
+            showMessages() {
+                this.$router.push('/')
+            },
+            showProfile() {
+                this.$router.push('/profile')
+            }
+        },
         created() {
             addHandler(data => {
                 if (data.objectType === 'MESSAGE') {
@@ -57,6 +71,11 @@
                     console.error(`Looks like the object type if unknown "${data.objectType}"`)
                 }
             })
+        },
+        beforeMount() {
+            if (!this.profile) {
+                this.$router.replace('/auth')
+            }
         }
     }
 </script>
@@ -64,3 +83,4 @@
 <style>
 
 </style>
+<!--<v-icon>{{ logout }}</v-icon>-->
